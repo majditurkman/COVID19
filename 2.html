@@ -1,0 +1,201 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>COVID-19 Cases over Time</title>
+  <style>
+    html, body {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    #header {
+      background-color: #E8E8E8;
+      height: 65px;
+      margin: 5px 5px;
+    }
+
+    #title {
+      padding-top: 2px;
+      padding-left: 10px;
+      font-size: 18pt;
+      font-weight: 700;
+    }
+
+    #subtitle {
+      font-size: small;
+      padding-left: 40px;
+    }
+
+    #footer {
+      background-color: #E8E8E8;
+      height: 100px;
+      margin: 5px 5px;
+    }
+
+    #mainWindow {
+      width: 100%;
+      height: 100%;
+    }
+
+    #viewDiv1 {
+      margin: 5px;
+      padding: 0;
+      width: 33%;
+    }
+
+    #viewDiv2 {
+      margin: 5px;
+      padding: 0;
+    }
+
+    #viewDiv3 {
+      margin: 5px;
+      padding: 0;
+      width: 33%;
+    }
+
+    #titleDiv1 {
+      padding: 10px;
+      font-weight: 36;
+      text-align: center;
+    }
+
+    #titleDiv2 {
+      padding: 10px;
+      font-weight: 36;
+      text-align: center;
+    }
+
+    #titleDiv3 {
+      padding: 10px;
+      font-weight: 36;
+      text-align: center;
+    }
+
+    #timeSliderDiv {
+      /*position: absolute;
+      left: 100px;
+      right: 100px;
+      bottom: 20px;*/
+      border: solid 1px #000;
+    }
+
+  </style>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.14/"></script>
+
+  <script>
+
+    var view2;
+    var view3;
+
+    require([
+      "dojo/parser",
+      "esri/WebMap",
+      "esri/views/MapView",
+      "esri/widgets/TimeSlider",
+      "dijit/layout/BorderContainer",
+      "dijit/layout/ContentPane"
+    ], function(parser, WebMap, MapView, TimeSlider, BorderContainer, ContentPane) {
+
+      parser.parse();
+
+      var webmap1 = new WebMap({ portalItem: { id: "d0401002c45744b4b25e63cbf01de03a" } });
+      var view1 = new MapView({
+        container: "viewDiv1",
+        map: webmap1
+      });
+      view1.ui.add("titleDiv1", "top-right");
+
+      var webmap2 = new WebMap({ portalItem: { id: "6ccbaeea312544bca7dc2f437caaf481" } });
+      view2 = new MapView({
+        container: "viewDiv2",
+        map: webmap2
+      });
+      view2.ui.add("titleDiv2", "top-right");
+
+      var webmap3 = new WebMap({ portalItem: { id: "9e07dab752264ddda23dbf270f847c24" } });
+      view3 = new MapView({
+        container: "viewDiv3",
+        map: webmap3
+      });
+      view3.ui.add("titleDiv3", "top-right");
+
+
+      // time slider widget initialization
+      const timeSlider = new TimeSlider({
+        container: "timeSliderDiv",
+        mode: "time-window",
+        view: view1
+      });
+
+      view1.on("layerview-create", function(event) {
+        if (event.layer.id === "COVID_19_Daily_Progressive_Cases_29") {
+
+          const fullTimeExtent = event.layer.timeInfo.fullTimeExtent;
+
+          // set up time slider properties
+          timeSlider.fullTimeExtent = fullTimeExtent;
+          timeSlider.stops = {
+            interval: {
+              value: 1,
+              unit: "days"
+            }
+          }
+        }
+      });
+
+      timeSlider.watch("timeExtent", function(value){
+        // update layer view filter to reflect current timeExtent
+        // timeLayerView.filter = {
+        //   timeExtent: value
+        // };
+        view2.timeExtent = value;
+        view3.timeExtent = value;
+      });
+
+    });
+  </script>
+</head>
+<body>
+
+  <div id="mainWindow" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'">
+      
+      <div id="header" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+        <div id="title">COVID-19 Cases over Time</div>
+        <div id="subtitle"></div>
+      </div>
+
+      <div id="viewDiv1" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'"></div>
+
+      <div id="viewDiv2" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
+
+      <div id="viewDiv3" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'"></div>
+
+    <div id="footer" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'bottom'">
+      <div id="timeSliderDiv"></div>
+    </div>
+  
+  </div>
+
+
+  <div id="titleDiv1" class="esri-widget">
+    <div id="titleText1">Confirmed</div>
+  </div>
+
+  <div id="titleDiv2" class="esri-widget">
+    <div id="titleText2">Recovered</div>
+  </div>
+
+  <div id="titleDiv3" class="esri-widget">
+    <div id="titleText3">Deaths</div>
+  </div>
+
+  <!-- <div id="viewDiv"></div> -->
+
+</body>
+</html>
